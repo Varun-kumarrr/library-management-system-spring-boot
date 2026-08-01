@@ -30,14 +30,14 @@ public class BookService {
 
     public List<Book> getAllBook()
     {
-        List<Book> allBook = bookRepository.findByDeletedIsFalse();
+        List<Book> allBook = bookRepository.findByIsDeletedFalse();
         return allBook;
 
     }
 
     public Book getBookById(Integer id)
     {
-        Optional<Book> resBook = bookRepository.findByIdAndDeletedIsFalse(id);
+        Optional<Book> resBook = bookRepository.findByIdAndIsDeletedFalse(id);
 
         if(resBook.isPresent())
         {
@@ -49,7 +49,7 @@ public class BookService {
 
     public Book updateBook(Integer id, Book book)
     {
-        Optional<Book> resBook = bookRepository.findByIdAndDeletedIsFalse(id);
+        Optional<Book> resBook = bookRepository.findByIdAndIsDeletedFalse(id);
         if(resBook.isEmpty())
         {
             return null;
@@ -73,7 +73,7 @@ public class BookService {
 
     public boolean deleteBook(Integer id)
     {
-        Optional<Book> resBook = bookRepository.findByIdAndDeletedIsFalse(id);
+        Optional<Book> resBook = bookRepository.findByIdAndIsDeletedFalse(id);
 
         if (resBook.isEmpty())
         {

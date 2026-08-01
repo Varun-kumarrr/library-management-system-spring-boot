@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book , Integer> {
-    List<Book> findByDeletedIsFalse();
-    Optional<Book> findByIdAndDeletedIsFalse(Integer id);
+    List<Book> findByIsDeletedFalse();
+    Optional<Book> findByIdAndIsDeletedFalse(Integer id);
 }
