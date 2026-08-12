@@ -1,9 +1,14 @@
 package in.varun.Library.Management.System.service;
 
+import in.varun.Library.Management.System.dto.request.CreateBookRequestDto;
+import in.varun.Library.Management.System.dto.request.UpdateBookRequestDto;
+import in.varun.Library.Management.System.dto.response.BookResponseDto;
 import in.varun.Library.Management.System.entity.Book;
 import in.varun.Library.Management.System.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,36 +23,38 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
-    public Book createBook(Book book)
+    public BookResponseDto createBook(CreateBookRequestDto bookReq)
     {
-        book.setDeleted(false);
-        book.setAvailableCopies(book.getTotalCopies());
-        book.setStatus(book.getAvailableCopies()>0?AVAILABLE:OUT_OF_STOCK);
-        Book savedBook = bookRepository.save(book);
-        return savedBook;
+        Book savedBook = bookRepository.save(mapCreateDtoToEntity(bookReq));
+        BookResponseDto bookResp = mapToResponseDto(savedBook);
+        return bookResp;
 
     }
 
-    public List<Book> getAllBook()
+    public List<BookResponseDto> getAllBook()
     {
         List<Book> allBook = bookRepository.findByIsDeletedFalse();
-        return allBook;
+        List<BookResponseDto> allBookResp = new ArrayList<>();
+        for (Book book : allBook) {
+            allBookResp.add(mapToResponseDto(book));
+        }
+        return allBookResp;
 
     }
 
-    public Book getBookById(Integer id)
+    public BookResponseDto getBookById(Integer id)
     {
         Optional<Book> resBook = bookRepository.findByIdAndIsDeletedFalse(id);
-
-        if(resBook.isPresent())
+        if(resBook.isEmpty())
         {
-            return resBook.get();
+            return null;
         }
-        return null;
+        BookResponseDto bookResp = mapToResponseDto(resBook.get());
+        return bookResp;
 
     }
 
-    public Book updateBook(Integer id, Book book)
+    public BookResponseDto updateBook(Integer id, UpdateBookRequestDto bookReq)
     {
         Optional<Book> resBook = bookRepository.findByIdAndIsDeletedFalse(id);
         if(resBook.isEmpty())
@@ -55,20 +62,18 @@ public class BookService {
             return null;
         }
 
-        Book updateBook = resBook.get();
-        updateBook.setPrice(book.getPrice());
-        updateBook.setAuthor(book.getAuthor());
-        updateBook.setCategory(book.getCategory());
-        updateBook.setDescription(book.getDescription());
-        updateBook.setIsbn(book.getIsbn());
-        updateBook.setPublisher(book.getPublisher());
-        updateBook.setTitle(book.getTitle());
-        updateBook.setTotalCopies(book.getTotalCopies());
-        updateBook.setAvailableCopies(book.getTotalCopies());
-        updateBook.setStatus(updateBook.getAvailableCopies()>0?AVAILABLE:OUT_OF_STOCK);
+        Book book = resBook.get();
+        book.setTitle(bookReq.getTitle());
+        book.setPublisher(bookReq.getPublisher());
+        book.setCategory(bookReq.getCategory());
+        book.setDescription(bookReq.getDescription());
+        book.setAuthor(bookReq.getAuthor());
+        book.setPrice(bookReq.getPrice());
+        book.setUpdatedAt(LocalDateTime.now());
 
-        return bookRepository.save(updateBook);
+        Book updatedBook = bookRepository.save(book);
 
+        return mapToResponseDto(updatedBook);
     }
 
     public boolean deleteBook(Integer id)
@@ -81,10 +86,54 @@ public class BookService {
         }
 
         Book deleteBook = resBook.get();
+        deleteBook.setUpdatedAt(LocalDateTime.now());
         deleteBook.setDeleted(true);
         bookRepository.save(deleteBook);
 
         return true;
+
+    }
+
+    private Book mapCreateDtoToEntity(CreateBookRequestDto bookReq)
+    {
+        Book book = new Book();
+
+        book.setDeleted(false);
+        book.setTotalCopies(bookReq.getTotalCopies());
+        book.setAvailableCopies(book.getTotalCopies());
+        book.setStatus(book.getAvailableCopies()>0?AVAILABLE:OUT_OF_STOCK);
+        book.setTitle(bookReq.getTitle());
+        book.setIsbn(bookReq.getIsbn());
+        book.setPublisher(bookReq.getPublisher());
+        book.setDescription(bookReq.getDescription());
+        book.setCategory(bookReq.getCategory());
+        book.setAuthor(bookReq.getAuthor());
+        book.setPrice(bookReq.getPrice());
+        book.setCreatedAt(LocalDateTime.now());
+        book.setUpdatedAt(LocalDateTime.now());
+
+        return book;
+    }
+
+    private BookResponseDto mapToResponseDto(Book book)
+    {
+        BookResponseDto bookResp = new BookResponseDto();
+
+        bookResp.setId(book.getId());
+        bookResp.setAuthor(book.getAuthor());
+        bookResp.setAvailableCopies(book.getAvailableCopies());
+        bookResp.setCategory(book.getCategory());
+        bookResp.setDescription(book.getDescription());
+        bookResp.setIsbn(book.getIsbn());
+        bookResp.setStatus(book.getStatus());
+        bookResp.setTitle(book.getTitle());
+        bookResp.setPrice(book.getPrice());
+        bookResp.setTotalCopies(book.getTotalCopies());
+        bookResp.setPublisher(book.getPublisher());
+        bookResp.setCreatedAt(book.getCreatedAt());
+        bookResp.setUpdatedAt(book.getUpdatedAt());
+
+        return bookResp;
 
     }
 }

@@ -1,17 +1,11 @@
-package in.varun.Library.Management.System.entity;
+package in.varun.Library.Management.System.dto.response;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import org.hibernate.annotations.AnyDiscriminatorImplicitValues;
+import in.varun.Library.Management.System.entity.Status;
 
 import java.time.LocalDateTime;
 
-@Entity
-public class Book {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class BookResponseDto {
+
     private Integer id;
     private String isbn;
     private String title;
@@ -23,25 +17,8 @@ public class Book {
     private int totalCopies;
     private int availableCopies;
     private Status status;
-    private boolean isDeleted;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 
     public Integer getId() {
         return id;
@@ -131,12 +108,19 @@ public class Book {
         this.status = status;
     }
 
-    public boolean isDeleted() {
-        return isDeleted;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setDeleted(boolean deleted) {
-        isDeleted = deleted;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }
