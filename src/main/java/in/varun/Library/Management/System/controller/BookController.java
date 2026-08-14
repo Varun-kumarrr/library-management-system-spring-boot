@@ -5,7 +5,6 @@ import in.varun.Library.Management.System.dto.request.UpdateBookRequestDto;
 import in.varun.Library.Management.System.dto.response.BookResponseDto;
 import in.varun.Library.Management.System.service.BookService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +24,9 @@ public class BookController {
     public ResponseEntity<BookResponseDto> createBook(@Valid @RequestBody CreateBookRequestDto book)
     {
         BookResponseDto createdBook = bookService.createBook(book);
-        return ResponseEntity.status(201).body(createdBook);
+        return ResponseEntity
+                .status(201)
+                .body(createdBook);
     }
 
     @GetMapping
@@ -42,16 +43,8 @@ public class BookController {
     {
         BookResponseDto reqBook = bookService.getBookById(id);
 
-        if(reqBook == null)
-        {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(null);
-        }
         return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(reqBook);
-
+                .ok(reqBook);
     }
 
     @PutMapping("/{id}")
@@ -59,12 +52,6 @@ public class BookController {
     {
         BookResponseDto updatedBook = bookService.updateBook(id , book);
 
-        if(updatedBook == null)
-        {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(null);
-        }
         return ResponseEntity
                 .ok(updatedBook);
 
@@ -73,17 +60,10 @@ public class BookController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBook(@PathVariable Integer id)
     {
-        boolean isDeleted = bookService.deleteBook(id);
-        if(!isDeleted)
-        {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("Id Not Found");
-        }
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body("Deleted Successfully");
+        bookService.deleteBook(id);
 
+        return ResponseEntity
+                .ok("Deleted Successfully");
     }
 
 }

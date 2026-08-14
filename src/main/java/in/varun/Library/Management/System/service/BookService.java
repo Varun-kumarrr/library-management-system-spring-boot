@@ -4,13 +4,14 @@ import in.varun.Library.Management.System.dto.request.CreateBookRequestDto;
 import in.varun.Library.Management.System.dto.request.UpdateBookRequestDto;
 import in.varun.Library.Management.System.dto.response.BookResponseDto;
 import in.varun.Library.Management.System.entity.Book;
+import in.varun.Library.Management.System.exception.DuplicateResourceException;
+import in.varun.Library.Management.System.exception.ResourceNotFoundException;
 import in.varun.Library.Management.System.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static in.varun.Library.Management.System.entity.Status.AVAILABLE;
 import static in.varun.Library.Management.System.entity.Status.OUT_OF_STOCK;
@@ -25,9 +26,14 @@ public class BookService {
 
     public BookResponseDto createBook(CreateBookRequestDto bookReq)
     {
+        Boolean exist = bookRepository.existsByIsbnAndIsDeletedFalse(bookReq.getIsbn());
+        if(exist)
+        {
+            throw new DuplicateResourceException("ISBN "+bookReq.getIsbn()+" already exist in DataBase");
+        }
         Book savedBook = bookRepository.save(mapCreateDtoToEntity(bookReq));
-        BookResponseDto bookResp = mapToResponseDto(savedBook);
-        return bookResp;
+
+        return mapToResponseDto(savedBook);
 
     }
 
@@ -44,54 +50,39 @@ public class BookService {
 
     public BookResponseDto getBookById(Integer id)
     {
-        Optional<Book> resBook = bookRepository.findByIdAndIsDeletedFalse(id);
-        if(resBook.isEmpty())
-        {
-            return null;
-        }
-        BookResponseDto bookResp = mapToResponseDto(resBook.get());
-        return bookResp;
+        Book resBook = bookRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Book with id " + id + " not found"));
+
+        return mapToResponseDto(resBook);
 
     }
 
     public BookResponseDto updateBook(Integer id, UpdateBookRequestDto bookReq)
     {
-        Optional<Book> resBook = bookRepository.findByIdAndIsDeletedFalse(id);
-        if(resBook.isEmpty())
-        {
-            return null;
-        }
+        Book resBook = bookRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(()->new ResourceNotFoundException("Book with id " + id + " not found"));
 
-        Book book = resBook.get();
-        book.setTitle(bookReq.getTitle());
-        book.setPublisher(bookReq.getPublisher());
-        book.setCategory(bookReq.getCategory());
-        book.setDescription(bookReq.getDescription());
-        book.setAuthor(bookReq.getAuthor());
-        book.setPrice(bookReq.getPrice());
-        book.setUpdatedAt(LocalDateTime.now());
+        resBook.setTitle(bookReq.getTitle());
+        resBook.setPublisher(bookReq.getPublisher());
+        resBook.setCategory(bookReq.getCategory());
+        resBook.setDescription(bookReq.getDescription());
+        resBook.setAuthor(bookReq.getAuthor());
+        resBook.setPrice(bookReq.getPrice());
+        resBook.setUpdatedAt(LocalDateTime.now());
 
-        Book updatedBook = bookRepository.save(book);
+        Book updatedBook = bookRepository.save(resBook);
 
         return mapToResponseDto(updatedBook);
     }
 
-    public boolean deleteBook(Integer id)
+    public void deleteBook(Integer id)
     {
-        Optional<Book> resBook = bookRepository.findByIdAndIsDeletedFalse(id);
+        Book resBook = bookRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(()->new ResourceNotFoundException("Book with id " + id + " not found"));
 
-        if (resBook.isEmpty())
-        {
-            return false;
-        }
-
-        Book deleteBook = resBook.get();
-        deleteBook.setUpdatedAt(LocalDateTime.now());
-        deleteBook.setDeleted(true);
-        bookRepository.save(deleteBook);
-
-        return true;
-
+        resBook.setUpdatedAt(LocalDateTime.now());
+        resBook.setDeleted(true);
+        bookRepository.save(resBook);
     }
 
     private Book mapCreateDtoToEntity(CreateBookRequestDto bookReq)
